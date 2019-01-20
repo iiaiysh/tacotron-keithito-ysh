@@ -117,7 +117,9 @@ def train(log_dir, args):
           filename = str(filename)
           filename = filename[2:-1]
           #log('   Input file: %s' % filename)
-          os.system(f'cp {filename} {log_dir}/step-{step}-audio-truth.wav')
+          cmd = f'cp {filename} {log_dir}/step-{step}-audio-truth.wav'
+          print(cmd)
+          os.system(cmd)
           
           log('saving audio train...')
           waveform = audio.inv_spectrogram(spectrogram.T)
@@ -128,6 +130,7 @@ def train(log_dir, args):
           audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio-target.wav' % step))
 
           log('saving audio eval...')
+          print('%s-%d' % (checkpoint_path, step))
           synthesizer.load('%s-%d' % (checkpoint_path, step))
           base_path = os.path.join(log_dir, 'step-%d-audio-eval.wav')
           with open(path, 'wb') as f:
