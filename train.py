@@ -45,7 +45,7 @@ def time_string():
 def train(log_dir, args):
   commit = get_git_commit() if args.git else 'None'
   checkpoint_path = os.path.join(log_dir, 'model.ckpt')
-  input_path = os.path.join(args.base_dir, args.input)
+  input_path = args.input_path
   log('Checkpoint path: %s' % checkpoint_path)
   log('Loading training data from: %s' % input_path)
   log('Using model: %s' % args.model)
@@ -108,10 +108,18 @@ def train(log_dir, args):
           log('Saving checkpoint to: %s-%d' % (checkpoint_path, step))
           saver.save(sess, checkpoint_path, global_step=step)
           log('Saving audio and alignment...')
-          input_seq, spectrogram, alignment = sess.run([
-            model.inputs[0], model.linear_outputs[0], model.alignments[0]])
+          input_seq, spectrogram, alignment, linear_target= sess.run([
+            model.inputs[0], model.linear_outputs[0], model.alignments[0], model.linear_targets[0]])
+
+          log('saving audio train...')
           waveform = audio.inv_spectrogram(spectrogram.T)
-          audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio.wav' % step))
+          audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio-train.wav' % step))
+          
+          log('saving audio target...')
+          waveform = audio.inv_spectrogram(linear_target.T)
+          audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio-target.wav' % step))
+
+
           plot.plot_alignment(alignment, os.path.join(log_dir, 'step-%d-align.png' % step),
             info='%s, %s, %s, step=%d, loss=%.5f' % (args.model, commit, time_string(), step, loss))
           log('Input: %s' % sequence_to_text(input_seq))
@@ -124,10 +132,13 @@ def train(log_dir, args):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/tacotron'))
-  parser.add_argument('--input', default='training/train.txt')
+
+  parser.add_argument('--input_path', required=True, default='training/train.txt')
+  parser.add_argument('--logname', required=True, help='Name of the run. Used for logging. Defaults to model name.')
+
+
+  parser.add_argument('--base_dir', default=os.getcwd())
   parser.add_argument('--model', default='tacotron')
-  parser.add_argument('--name', help='Name of the run. Used for logging. Defaults to model name.')
   parser.add_argument('--hparams', default='',
     help='Hyperparameter overrides as a comma-separated list of name=value pairs')
   parser.add_argument('--restore_step', type=int, help='Global step to restore from checkpoint.')
@@ -140,7 +151,7 @@ def main():
   parser.add_argument('--git', action='store_true', help='If set, verify that the client is clean.')
   args = parser.parse_args()
   os.environ['TF_CPP_MIN_LOG_LEVEL'] = str(args.tf_log_level)
-  run_name = args.name or args.model
+  run_name = args.logname or args.model
   log_dir = os.path.join(args.base_dir, 'logs-%s' % run_name)
   os.makedirs(log_dir, exist_ok=True)
   infolog.init(os.path.join(log_dir, 'train.log'), run_name, args.slack_url)

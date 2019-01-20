@@ -5,6 +5,12 @@ from tqdm import tqdm
 from datasets import blizzard, ljspeech
 from hparams import hparams
 
+def preprocess_blizzard(args):
+  in_dir = os.path.join(args.dataset_path)
+  out_dir = os.path.join(args.training_path)
+  os.makedirs(out_dir, exist_ok=True)
+  metadata = ljspeech.build_from_path(in_dir, out_dir, args.num_workers, tqdm=tqdm)
+  write_metadata(metadata, out_dir)
 
 def preprocess_blizzard(args):
   in_dir = os.path.join(args.base_dir, 'Blizzard2012')
@@ -35,10 +41,13 @@ def write_metadata(metadata, out_dir):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/tacotron'))
+  parser.add_argument('--dataset_path', required=True)
+  parser.add_argument('--training_path', required=True)
+
+  parser.add_argument('--base_dir', default=os.getcwd())
   parser.add_argument('--output', default='training')
   parser.add_argument('--dataset', required=True, choices=['blizzard', 'ljspeech'])
-  parser.add_argument('--num_workers', type=int, default=cpu_count())
+  parser.add_argument('--num_workers', type=int, default=cpu_count())s
   args = parser.parse_args()
   if args.dataset == 'blizzard':
     preprocess_blizzard(args)
