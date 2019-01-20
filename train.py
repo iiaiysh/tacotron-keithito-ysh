@@ -20,7 +20,7 @@ def get_git_commit():
   commit = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()[:10]
   log('Git commit: %s' % commit)
   return commit
-
+from synthesizer import Synthesizer
 
 def add_stats(model):
   with tf.variable_scope('stats') as scope:
@@ -73,7 +73,7 @@ def train(log_dir, args):
   saver = tf.train.Saver(max_to_keep=None)
 
   # Train!
-  synthesizer = Synthesizer(reuse=AUTO_REUSE)
+  synthesizer = Synthesizer(reuse=tf.AUTO_REUSE)
   with tf.Session() as sess:
     try:
       summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
