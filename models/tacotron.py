@@ -14,7 +14,7 @@ class Tacotron():
     self._hparams = hparams
 
 
-  def initialize(self, inputs, input_lengths, mel_targets=None, linear_targets=None):
+  def initialize(self, inputs, input_lengths, filenames,mel_targets=None, linear_targets=None):
     '''Initializes the model for inference.
 
     Sets "mel_outputs", "linear_outputs", and "alignments" fields.
@@ -98,17 +98,19 @@ class Tacotron():
       self.alignments = alignments
       self.mel_targets = mel_targets
       self.linear_targets = linear_targets
+
+      self.filenames = filenames
       log('Initialized Tacotron model. Dimensions: ')
-      log('  embedding:               %d' % embedded_inputs.shape[-1])
-      log('  prenet out:              %d' % prenet_outputs.shape[-1])
-      log('  encoder out:             %d' % encoder_outputs.shape[-1])
-      log('  attention out:           %d' % attention_cell.output_size)
-      log('  concat attn & out:       %d' % concat_cell.output_size)
-      log('  decoder cell out:        %d' % decoder_cell.output_size)
-      log('  decoder out (%d frames):  %d' % (hp.outputs_per_step, decoder_outputs.shape[-1]))
-      log('  decoder out (1 frame):   %d' % mel_outputs.shape[-1])
-      log('  postnet out:             %d' % post_outputs.shape[-1])
-      log('  linear out:              %d' % linear_outputs.shape[-1])
+      # log('  embedding:               %d' % embedded_inputs.shape[-1])
+      # log('  prenet out:              %d' % prenet_outputs.shape[-1])
+      # log('  encoder out:             %d' % encoder_outputs.shape[-1])
+      # log('  attention out:           %d' % attention_cell.output_size)
+      # log('  concat attn & out:       %d' % concat_cell.output_size)
+      # log('  decoder cell out:        %d' % decoder_cell.output_size)
+      # log('  decoder out (%d frames):  %d' % (hp.outputs_per_step, decoder_outputs.shape[-1]))
+      # log('  decoder out (1 frame):   %d' % mel_outputs.shape[-1])
+      # log('  postnet out:             %d' % post_outputs.shape[-1])
+      # log('  linear out:              %d' % linear_outputs.shape[-1])
 
 
   def add_loss(self):
