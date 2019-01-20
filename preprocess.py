@@ -5,7 +5,7 @@ from tqdm import tqdm
 from datasets import blizzard, ljspeech
 from hparams import hparams
 
-def preprocess_blizzard(args):
+def preprocess_ysh(args):
   in_dir = os.path.join(args.dataset_path)
   out_dir = os.path.join(args.training_path)
   os.makedirs(out_dir, exist_ok=True)
@@ -46,13 +46,15 @@ def main():
 
   parser.add_argument('--base_dir', default=os.getcwd())
   parser.add_argument('--output', default='training')
-  parser.add_argument('--dataset', required=True, choices=['blizzard', 'ljspeech'])
-  parser.add_argument('--num_workers', type=int, default=cpu_count())s
+  parser.add_argument('--dataset', default='ysh', choices=['ysh','blizzard', 'ljspeech'])
+  parser.add_argument('--num_workers', type=int, default=cpu_count())
   args = parser.parse_args()
   if args.dataset == 'blizzard':
     preprocess_blizzard(args)
   elif args.dataset == 'ljspeech':
     preprocess_ljspeech(args)
+  elif args.dataset == 'ysh':
+    preprocess_ysh(args)
 
 
 if __name__ == "__main__":

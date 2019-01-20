@@ -45,7 +45,7 @@ def time_string():
 def train(log_dir, args):
   commit = get_git_commit() if args.git else 'None'
   checkpoint_path = os.path.join(log_dir, 'model.ckpt')
-  input_path = args.input_path
+  input_path = args.traintxt_path
   log('Checkpoint path: %s' % checkpoint_path)
   log('Loading training data from: %s' % input_path)
   log('Using model: %s' % args.model)
@@ -133,7 +133,7 @@ def train(log_dir, args):
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('--input_path', required=True, default='training/train.txt')
+  parser.add_argument('--traintxt_path', required=True, default='training/train.txt')
   parser.add_argument('--logname', required=True, help='Name of the run. Used for logging. Defaults to model name.')
 
 
