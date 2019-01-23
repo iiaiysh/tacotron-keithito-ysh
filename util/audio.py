@@ -15,6 +15,11 @@ def save_wav(wav, path):
   wav *= 32767 / max(0.01, np.max(np.abs(wav)))
   scipy.io.wavfile.write(path, hparams.sample_rate, wav.astype(np.int16))
 
+def save_wav_list(wav_list, path):
+  wav_list = [wav * 32767 / max(0.01, np.max(np.abs(wav))) for wav in wav_list]
+  wav_merge = np.concatenate(wav_list)
+  scipy.io.wavfile.write(path, hparams.sample_rate, wav_merge.astype(np.int16))
+
 
 def preemphasis(x):
   return scipy.signal.lfilter([1, -hparams.preemphasis], [1], x)

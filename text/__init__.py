@@ -13,13 +13,15 @@ _curly_re = re.compile(r'(.*?)\{(.+?)\}(.*)')
 def text2list(text):
     split_marks = ',.!?;'
     text_list = re.split(f'([{split_marks}])',text)
+    text_list = [text.strip() for text in text_list if text is not '']
     text_list_without_standalone_mark = []
     for i in range(0,len(text_list),2):
         if i+1 < len(text_list):
             text_list_without_standalone_mark.append(text_list[i] + text_list[i+1])
         else:
             text_list_without_standalone_mark.append(text_list[i])
-    return text_list_without_standalone_mark[:-1]
+    
+    return text_list_without_standalone_mark
 
 def add_tilde(text):
   #replace_marks = '.!?'

@@ -6,16 +6,18 @@ from synthesizer import Synthesizer
 
 
 sentences = [
-  # From July 8, 2017 New York Times:
-  'Scientists at the CERN laboratory say they have discovered a new particle.',
-  'There’s a way to measure the acute emotional intelligence that has never gone out of style.',
-  'President Trump met with other leaders at the Group of 20 conference.',
-  'The Senate\'s bill to repeal and replace the Affordable Care Act is now imperiled.',
-  # From Google's Tacotron example page:
-  'Generative adversarial network or variational auto-encoder.',
-  'The buses aren\'t the problem, they actually provide a solution.',
-  'Does the quick brown fox jump over the lazy dog?',
-  'Talib Kweli confirmed to AllHipHop that he will be releasing an album in the next year.',
+  # # From July 8, 2017 New York Times:
+  # 'Scientists at the CERN laboratory say they have discovered a new particle.',
+  # 'There’s a way to measure the acute emotional intelligence that has never gone out of style.',
+  # 'President Trump met with other leaders at the Group of 20 conference.',
+  # 'The Senate\'s bill to repeal and replace the Affordable Care Act is now imperiled.',
+  # # From Google's Tacotron example page:
+  # 'Generative adversarial network or variational auto-encoder.',
+  # 'The buses aren\'t the problem, they actually provide a solution.',
+  # 'Does the quick brown fox jump over the lazy dog?',
+  # 'Talib Kweli confirmed to AllHipHop that he will be releasing an album in the next year.',
+  "Tony Robbins is an entrepreneur,",
+  "Tony Robbins is an entrepreneur, best-selling author, philanthropist and the nation’s #1 Life and Business Strategist. A recognized authority on the psychology of leadership, negotiations and organizational turnaround, he has served as an advisor to leaders around the world for more than 40 years."
 ]
 
 
@@ -35,7 +37,7 @@ def run_eval(args):
     path = '%s-%d.wav' % (base_path, i)
     print('Synthesizing: %s' % path)
     with open(path, 'wb') as f:
-      f.write(synth.synthesize(text))
+      f.write(synth.synthesize_fromlist(text))
 
 
 def main():

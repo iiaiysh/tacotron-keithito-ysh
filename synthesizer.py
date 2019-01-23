@@ -49,6 +49,7 @@ class Synthesizer:
     print('synthesize from list:',text_list)
     cleaner_names = [x.strip() for x in hparams.cleaners.split(',')]
     wav_list=[]
+
     for text in text_list:
       seq = text_to_sequence(text, cleaner_names)
       feed_dict = {
@@ -59,8 +60,7 @@ class Synthesizer:
       wav = audio.inv_preemphasis(wav)
       wav = wav[:audio.find_endpoint(wav)]
       wav_list.append(wav)
-    wav_merge = np.concatenate(wav_list)
-    out = io.BytesIO()
-    audio.save_wav(wav_merge, out)
-    return out.getvalue()
 
+    out = io.BytesIO()
+    audio.save_wav_list(wav_list, out)
+    return out.getvalue()
