@@ -5,6 +5,10 @@ import os
 from synthesizer import Synthesizer
 
 
+import re
+import numpy as np
+from util import audio
+import tensorflow as tf
 html_body = '''<html><title>Demo</title>
 <style>
 body {padding: 16px; font-family: sans-serif; font-size: 14px; color: #444}
@@ -19,14 +23,17 @@ button[disabled] {opacity: 0.4; cursor: default}
 </style>
 <body>
 <form>
-  <input id="text" type="text" size="40" placeholder="Enter Text">
+  <input id="text" type="text" size="160" placeholder="Enter Text">
   <button id="button" name="synthesize">Speak</button>
+  <button id="button2" name="synthesize_fromlist">SpeakFromList</button>
 </form>
 <p id="message"></p>
 <audio id="audio" controls autoplay hidden></audio>
 <script>
+
 function q(selector) {return document.querySelector(selector)}
 q('#text').focus()
+
 q('#button').addEventListener('click', function(e) {
   text = q('#text').value.trim()
   if (text) {
@@ -38,6 +45,36 @@ q('#button').addEventListener('click', function(e) {
   e.preventDefault()
   return false
 })
+
+q('#button2').addEventListener('click', function(e) {
+  text = q('#text').value.trim()
+  if (text) {
+    q('#message').textContent = 'Synthesizing...'
+    q('#button2').disabled = true
+    q('#audio').hidden = true
+    synthesize_fromlist(text)
+  }
+  e.preventDefault()
+  return false
+})
+
+function synthesize_fromlist(text) {
+  fetch('/synthesize_fromlist?text=' + encodeURIComponent(text), {cache: 'no-cache'})
+    .then(function(res) {
+      if (!res.ok) throw Error(res.statusText)
+      return res.blob()
+    }).then(function(blob) {
+      q('#message').textContent = ''
+      q('#button2').disabled = false
+      q('#audio').src = URL.createObjectURL(blob)
+      q('#audio').hidden = false
+    }).catch(function(err) {
+      q('#message').textContent = 'Error: ' + err.message
+      q('#button2').disabled = false
+    })
+}
+
+
 function synthesize(text) {
   fetch('/synthesize?text=' + encodeURIComponent(text), {cache: 'no-cache'})
     .then(function(res) {
@@ -62,19 +99,28 @@ class UIResource:
     res.content_type = 'text/html'
     res.body = html_body
 
+class SynthesisResourceFromList:
+  def on_get(self, req, res):
+    if not req.params.get('text'):
+      raise falcon.HTTPBadRequest()
+    text = req.params.get('text')
+    res.data = synthesizer.synthesize_fromlist(text)
+    res.content_type = 'audio/wav'
+
 
 class SynthesisResource:
   def on_get(self, req, res):
     if not req.params.get('text'):
       raise falcon.HTTPBadRequest()
-    res.data = synthesizer.synthesize(req.params.get('text'))
+    text = req.params.get('text')
+    res.data = synthesizer.synthesize(text)
     res.content_type = 'audio/wav'
 
 
-synthesizer = Synthesizer()
 api = falcon.API()
 api.add_route('/synthesize', SynthesisResource())
-api.add_route('/', UIResource())
+api.add_route('/synthesize_fromlist', SynthesisResourceFromList())
+api.add_route('/demo', UIResource())
 
 
 if __name__ == '__main__':
@@ -84,11 +130,17 @@ if __name__ == '__main__':
   parser.add_argument('--port', type=int, default=9000)
   parser.add_argument('--hparams', default='',
     help='Hyperparameter overrides as a comma-separated list of name=value pairs')
+  parser.add_argument('--reference_audio', default=None, help='Reference audio path')
+  parser.add_argument('--mel_targets', default=None, help='Mel-targets path, used when use teacher_force generation')
   args = parser.parse_args()
   os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
   hparams.parse(args.hparams)
   print(hparams_debug_string())
+
+  synthesizer = Synthesizer()
   synthesizer.load(args.checkpoint)
+  #base_path = get_output_base_path(args.checkpoint)
+
   print('Serving on port %d' % args.port)
   simple_server.make_server('0.0.0.0', args.port, api).serve_forever()
 else:

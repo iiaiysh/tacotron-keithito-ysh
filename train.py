@@ -15,6 +15,8 @@ from util import audio, infolog, plot, ValueWindow
 log = infolog.log
 
 
+test_sentence = "Welcome to the inception institute of artificial intelligence, my name is Tony Robbins! I am kidding, I am not really Tony Robbins. and I never said this. I am still a work in progress. so, don't mind any strange artifacts you might hear."
+
 def get_git_commit():
   subprocess.check_output(['git', 'diff-index', '--quiet', 'HEAD'])   # Verify client is clean
   commit = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()[:10]
@@ -74,7 +76,9 @@ def train(log_dir, args):
 
   # Train!
   synthesizer = Synthesizer(reuse=tf.AUTO_REUSE)
-  with tf.Session() as sess:
+  config = tf.ConfigProto()
+  config.gpu_options.per_process_gpu_memory_fraction = 0.4
+  with tf.Session(config=config) as sess:
     try:
       summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
       sess.run(tf.global_variables_initializer())
@@ -109,7 +113,7 @@ def train(log_dir, args):
         if step % args.checkpoint_interval == 0:
           log('Saving checkpoint to: %s-%d' % (checkpoint_path, step))
           saver.save(sess, checkpoint_path, global_step=step)
-          log('Saving audio and alignment...')
+          #log('Saving audio and alignment...')
           input_seq, spectrogram, alignment, linear_target, filename= sess.run([
             model.inputs[0], model.linear_outputs[0], model.alignments[0], model.linear_targets[0],model.filenames[0]])
 
@@ -118,7 +122,7 @@ def train(log_dir, args):
           filename = filename[2:-1]
           #log('   Input file: %s' % filename)
           cmd = f'cp {filename} {log_dir}/step-{step}-audio-truth.wav'
-          print(cmd)
+          #print(cmd)
           os.system(cmd)
           
           log('saving audio train...')
@@ -130,11 +134,19 @@ def train(log_dir, args):
           audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio-target.wav' % step))
 
           log('saving audio eval...')
-          print('%s-%d' % (checkpoint_path, step))
+          #print('%s-%d' % (checkpoint_path, step))
           synthesizer.load('%s-%d' % (checkpoint_path, step))
-          base_path = os.path.join(log_dir, 'step-%d-audio-eval.wav')
-          with open(path, 'wb') as f:
-            f.write(synthesizer.synthesize(text))
+          outwav_path = os.path.join(log_dir, 'step-%d-audio-eval.wav'%step)
+          with open(outwav_path, 'wb') as f:
+            f.write(synthesizer.synthesize(sequence_to_text(input_seq)))
+
+          outwav_path = os.path.join(log_dir, 'step-%d-audio-test.wav'%step)
+          with open(outwav_path, 'wb') as f:
+            f.write(synthesizer.synthesize(test_sentence))
+
+          outwav_path = os.path.join(log_dir, 'step-%d-audio-test-list.wav'%step)
+          with open(outwav_path, 'wb') as f:
+            f.write(synthesizer.synthesize_fromlist(test_sentence))
 
           plot.plot_alignment(alignment, os.path.join(log_dir, 'step-%d-align.png' % step),
             info='%s, %s, %s, step=%d, loss=%.5f' % (args.model, commit, time_string(), step, loss))
