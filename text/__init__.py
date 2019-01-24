@@ -1,7 +1,7 @@
 import re
 from text import cleaners
 from text.symbols import symbols
-
+import numpy as np
 
 # Mappings from symbol to numeric ID and vice versa:
 _symbol_to_id = {s: i for i, s in enumerate(symbols)}
@@ -9,6 +9,13 @@ _id_to_symbol = {i: s for i, s in enumerate(symbols)}
 
 # Regular expression matching text enclosed in curly braces:
 _curly_re = re.compile(r'(.*?)\{(.+?)\}(.*)')
+
+def list_pad_to_numpy(seq):
+  out = np.zeros([len(seq),len(max(seq,key = lambda x: len(x)))])
+  for i,j in enumerate(seq):
+    out[i][0:len(j)] = j
+  return out
+
 
 def text2list(text):
     split_marks = ',.!?;'

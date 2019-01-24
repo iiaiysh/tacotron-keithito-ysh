@@ -16,7 +16,7 @@ sentences = [
   # 'The buses aren\'t the problem, they actually provide a solution.',
   # 'Does the quick brown fox jump over the lazy dog?',
   # 'Talib Kweli confirmed to AllHipHop that he will be releasing an album in the next year.',
-  "Tony Robbins is an entrepreneur,",
+  # "Tony Robbins is an entrepreneur,",
   "Tony Robbins is an entrepreneur, best-selling author, philanthropist and the nation’s #1 Life and Business Strategist. A recognized authority on the psychology of leadership, negotiations and organizational turnaround, he has served as an advisor to leaders around the world for more than 40 years."
 ]
 
@@ -35,7 +35,12 @@ def run_eval(args):
   base_path = get_output_base_path(args.checkpoint)
   for i, text in enumerate(sentences):
     path = '%s-%d.wav' % (base_path, i)
+    path2 = '%s-%d-2.wav' % (base_path, i)
+
     print('Synthesizing: %s' % path)
+
+    with open(path2, 'wb') as f:    
+      f.write(synth.synthesize_fromlist_2(text))
     with open(path, 'wb') as f:
       f.write(synth.synthesize_fromlist(text))
 
